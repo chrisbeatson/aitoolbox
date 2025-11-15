@@ -1,6 +1,6 @@
-# AI Sandbox
+ # AI Toolbox
 
-Kickstarts a sandbox with n8n (with puppeteer node), postgres, qdrant, neo4j, and redis
+Kickstarts a locally hosted AI toolbox with n8n (with a built in puppeteer node), postgres, qdrant, neo4j, and redis
 
 ### What’s included
 
@@ -25,43 +25,24 @@ integrations and advanced AI components. This is a custom n8n image with puppete
 
 ---
 
-bring up the containers
-
+## start the containers
 ```bash
-docker compose -p aisandbox -f docker-compose.yml up -d
+sh start.sh
 ```
 
-## Upgrading
-
-To update all containers to their latest versions, run these commands:
-
+## upgrade containers
 ```bash
-
-# Stop all services
-docker compose -p aisandbox -f docker-compose.yml down
-
-# Pull latest versions of all containers
-docker compose -p aisandbox -f docker-compose.yml pull
-
-# Restart the services
-docker compose -p aisandbox -f docker-compose.yml up -d
-
+sh rebuild.sh
 ```
 
-## 👓 Recommended reading
+# Stop all containers
+```bash
+sh stop.sh
+```
 
-n8n is full of useful content for getting started quickly with its AI concepts
-and nodes.
+## n8n templates
 
-- [AI agents for developers: from theory to practice with n8n](https://blog.n8n.io/ai-agents/)
-- [Tutorial: Build an AI workflow in n8n](https://docs.n8n.io/advanced-ai/intro-tutorial/)
-- [Langchain Concepts in n8n](https://docs.n8n.io/advanced-ai/langchain/langchain-n8n/)
-- [Demonstration of key differences between agents and chains](https://docs.n8n.io/advanced-ai/examples/agent-chain-comparison/)
-- [What are vector databases?](https://docs.n8n.io/advanced-ai/examples/understand-vector-databases/)
-
-## 🛍️ More AI templates
-
-For more AI workflow ideas, visit the [**official n8n AI template
+For AI workflow ideas, visit the [**official n8n AI template
 gallery**](https://n8n.io/workflows/?categories=AI). From each workflow,
 select the **Use workflow** button to automatically import the workflow into
 your local n8n instance.
@@ -69,7 +50,8 @@ your local n8n instance.
 ### Accessing local files
 
 The self-hosted AI starter kit will create a shared folder (by default,
-located in the same directory) which is mounted to the n8n container and
+located in the same directory, called 'shared', but can be specified in
+the .env file ) which is mounted to the n8n container and
 allows n8n to access files on disk. This folder within the n8n container is
 located at `/data/shared` -- this is the path you’ll need to use in nodes that
 interact with the local filesystem.

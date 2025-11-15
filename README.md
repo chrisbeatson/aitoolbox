@@ -35,7 +35,7 @@ sh start.sh
 sh rebuild.sh
 ```
 
-# Stop all containers
+## Stop all containers
 ```bash
 sh stop.sh
 ```

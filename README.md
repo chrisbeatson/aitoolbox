@@ -38,7 +38,8 @@ sh rebuild.sh
 sh stop.sh
 ```
 
-## Accessing the Postgres and Redis containers from n8n.  Use the hostnames 'postgres' and 'redis'.  They are in the same docker network (aitoolbox) as the n8n container.
+## Accessing the Postgres and Redis containers from n8n.
+Use the hostnames 'postgres' and 'redis'.  They are in the same docker network (aitoolbox) as the n8n container.
 
 ## n8n templates
 

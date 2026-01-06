@@ -1,41 +1,17 @@
-# This docker-compose file sets up n8n, Neo4j, Redis, Postgres, and Qdrant services.
-# The n8n service is custom-built to include Puppeteer.
+# This docker-compose file sets up n8n, Redis, and postgres with the vector plugin
 services:
-  neo4j:
-    image: neo4j:latest
-    container_name: neo4j
-    hostname: neo4j
-    volumes:
-        - ./neo4j/logs:/logs
-        - ./neo4j/config:/config
-        - ./neo4j/data:/data
-        - ./neo4j/plugins:/plugins
-    networks:
-      - aitoolkit
-    expose:
-      - 7473/tcp
-      - 7474/tcp
-      - 7687/tcp
-    environment:
-        - NEO4J_AUTH=${NEO4J_AUTH:-"neo4j/your_password"}
-    ports:
-      - 7473:7473
-      - 7474:7474
-      - 7687:7687
-    restart: always
-
   redis:
     container_name: redis
     hostname: redis
-    image: docker.io/valkey/valkey:8-alpine
-    command: valkey-server --save 30 1 --loglevel warning
+    image: redis:latest
+    command: redis-server --save 60 1 --loglevel warning
     restart: unless-stopped
     ports:
       - 6379:6379
     networks:
       - aitoolkit
     volumes:
-      - valkey-data:/data
+      - redis-data:/data
     logging:
       driver: "json-file"
       options:
@@ -43,7 +19,7 @@ services:
         max-file: "1"
 
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg17
     container_name: postgres
     hostname: postgres
     networks:
@@ -58,42 +34,31 @@ services:
     volumes:
       - postgres_storage:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
+        ]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  qdrant:
-    image: qdrant/qdrant
-    hostname: qdrant
-    container_name: qdrant
-    networks:
-      - aitoolkit
-    restart: unless-stopped
-    ports:
-      - 6333:6333
-    volumes:
-      - qdrant_storage:/qdrant/storage
-
   n8n:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: n8n-custom-puppeteer
-    cap_add:
-      - SYS_ADMIN
+    image: docker.n8n.io/n8nio/n8n
     environment:
       - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_ONBOARDING_FLOW_DISABLED=true
       - N8N_PERSONALIZATION_ENABLED=false
-      - N8N_ENCRYPTION_KEY
+      - N8N_TEMPLATES_ENABLED=true
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_HIRING_BANNER_ENABLED=false
       - WEBHOOK_URL=${N8N_HOSTNAME:+https://}${N8N_HOSTNAME:-http://localhost:5678}
       - N8N_HOST=${N8N_HOSTNAME:-localhost}
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
       - N8N_RUNNERS_ENABLED=true
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
-      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_USER=${POSTGRES_USER}
@@ -109,7 +74,7 @@ services:
       - n8n_storage:/home/node/.n8n
       # The local path for the shared volume is now configurable via the SHARED_DATA_PATH environment variable.
       # It defaults to './shared' if the variable is not set.
-      - ${SHARED_DATA_PATH:-./shared}:/data/shared
+      - ${SHARED_DATA_PATH:-./shared}:/home/node/.n8n-files
     ports:
       - 5678:5678
     depends_on:
@@ -121,6 +86,5 @@ networks:
 
 volumes:
   n8n_storage:
-  valkey-data:
+  redis-data:
   postgres_storage:
-  qdrant_storage:

@@ -30,7 +30,7 @@ sh start.sh
 
 ## upgrade containers
 ```bash
-sh rebuild.sh
+sh upgrade.sh
 ```
 
 ## Stop all containers
